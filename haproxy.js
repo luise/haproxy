@@ -47,4 +47,4 @@ function buildConfig(addrs, balance) {
     return config;
 }
 
-module.exports.Haproxy = Haproxy;
+module.exports = Haproxy;

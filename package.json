@@ -1,6 +1,6 @@
 {
   "name": "@quilt/haproxy",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "./haproxy.js",
   "license": "MIT",
   "dependencies": {
