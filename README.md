@@ -1,41 +1,42 @@
 # HAProxy for Quilt
 
 This repository implements a HAProxy blueprint for Quilt. The module has two different
-constructors: `singleServiceLoadBalancer` and `withURLrouting`.
+constructors: `simpleLoadBalancer` and `withURLrouting`.
 
-### singleServiceLoadBalancer
-`singleServiceLoadBalancer` creates a basic load balancer over a single service. It
-takes the following arguments:
+### simpleLoadBalancer
+`simpleLoadBalancer` creates an HAProxy container that load balances
+over a group of containers, using sticky sessions. It takes the following
+arguments:
 
 ```javascript
-@param {number} n - The desired number of HAProxy replicas.
-@param {Service} service - The service whose traffic should be load balanced.
-@param {string} [balance=roundrobin] - The load balancing alorithm to use. See possible algorithms in the HAProxy configuration manual for the `balance` keyword.
+@param {Container[]} containers The containers whose traffic should be load balanced.
+@param {string} [balance=roundrobin] balance The load balancing algorithm to
+  use. See the HAProxy docs for possible algorithms.
 ```
 
-HAProxy will communicate with the services behind it on port 80.
+HAProxy will communicate with the containers behind it on port 80.
 
 #### Example
 ```javascript
-const {Container, Service} = require('@quilt/quilt');
+const {Container} = require('@quilt/quilt');
 const haproxy = require('@quilt/haproxy');
 
-let proxy = haproxy.singleServiceLoadBalancer(2, new Service('web',
-	new Container('nginx').replicate(3)));
+const proxy = haproxy.simpleLoadBalancer(new Container('web', 'nginx').replicate(3)));
 ```
-The `proxy` variable now refers to a HAProxy `Service` with 2 replicas that do
+The `proxy` variable now refers to a HAProxy container that does
 roundrobin load balancing over 3 nginx containers.
 
 ### withURLrouting
-The `withURLrouting` constructor creates a replicated HAProxy service that performs load
+The `withURLrouting` constructor creates an HAProxy container that performs load
 balanced, URL based routing with sticky sessions. It uses session cookies to implement
 the sticky sessions.
-Very similar to above, the constructor takes the following four arguments:
+Very similar to above, the constructor takes the following arguments:
 
 ```javascript
-@param {number} n - The desired number of HAProxy replicas.
-@param {Object.<string, Service>} domainToService - A map from domain name to the service that should handle requests for that domain.
-@param {string} [balance=roundrobin] - The load balancing alorithm to use. See possible algorithms in the HAProxy configuration manual for the `balance` keyword.
+@param {Object.<string, Container[]>} domainToContainers A map from domain name
+to the containers that should receive traffic for that domain.
+@param {string} [balance=roundrobin] The load balancing algorithm to use.
+  See the HAProxy docs for possible algorithms.
 ```
 
 HAProxy will communicate with the services behind it on port 80.
@@ -43,16 +44,16 @@ HAProxy will communicate with the services behind it on port 80.
 #### Example
 
 ```javascript
-let proxy = haproxy.withURLrouting(2, {
- 	'webA.com': new Service('webA', new Container('nginx').replicate(3)),
-	'webB.com': new Service('webB', new Container('nginx').replicate(2)),
+const proxy = haproxy.withURLrouting({
+ 	'webA.com': new Container('webA', 'nginx').replicate(3),
+	'webB.com': new Container('webB', 'nginx').replicate(2),
 });
 ```
 
-`proxy` now refers to a `Service` with 2 HAProxy instances that sits in front of the
-replicated websites at `webA.com` and `webB.com` respecitvely. Requests sent to the
-HAProxy IP address will be forwarded to the correct webserver as determined by the
-`Host` header in the HTTP request. The proxies will have the following configuration:
+`proxy` now refers to an HAProxy instance that sits in front of the
+replicated websites at `webA.com` and `webB.com` respectively. Requests sent to the
+HAProxy IP address will be forwarded to the correct web server as determined by the
+`Host` header in the HTTP request. The proxy will have the following configuration:
 
 ```
 global
@@ -69,34 +70,36 @@ resolvers dns
 
 frontend http-in
     bind *:80
-    acl webA_req hdr(host) -i webA.com
-    acl webB_req hdr(host) -i webB.com
-    use_backend webA if webA_req
-    use_backend webB if webB_req
 
-backend webA
+    acl webA.com_req hdr(host) -i webA.com
+    use_backend webA.com if webA.com_req
+
+    acl webB.com_req hdr(host) -i webB.com
+    use_backend webB.com if webB.com_req
+
+backend webA.com
     balance roundrobin
     cookie SERVERID insert indirect nocache
-    server webA-0 1.webA.q:80 check resolvers dns cookie webA-0
-    server webA-1 2.webA.q:80 check resolvers dns cookie webA-1
-    server webA-2 3.webA.q:80 check resolvers dns cookie webA-2
+    server webA2.q webA2.q:80 check resolvers dns cookie webA2.q
+    server webA3.q webA3.q:80 check resolvers dns cookie webA3.q
+    server webA4.q webA4.q:80 check resolvers dns cookie webA4.q
 
-backend webB
+backend webB.com
     balance roundrobin
     cookie SERVERID insert indirect nocache
-    server webB-0 1.webB.q:80 check resolvers dns cookie webB-0
-    server webB-1 2.webB.q:80 check resolvers dns cookie webB-1
+    server webB2.q webB2.q:80 check resolvers dns cookie webB2.q
+    server webB3.q webB3.q:80 check resolvers dns cookie webB3.q
 ```
 
 ## Accessing the Proxy
-If you want the proxy to be accessible from the public internet, simply add the following
+To make the proxy accessible from the public internet, simply add the following
 line to your blueprint:
 
 ```javascript
 proxy.allowFrom(publicInternet, haproxy.exposedPort);
 ```
 
-This will open port 80 on all proxy instances.
+This will open port 80 on the proxy instance.
 
 ## More
 See [Quilt](http://quilt.io) for more information.
