@@ -17,6 +17,9 @@ arguments:
 HAProxy will communicate with the containers behind it on port 80.
 
 #### Example
+*See [a full example](./examples/haproxyExampleSingleApp.js) in the `examples`
+directory*.
+
 ```javascript
 const {Container} = require('kelda');
 const haproxy = require('@kelda/haproxy');
@@ -48,6 +51,8 @@ to the containers that should receive traffic for that domain.
 HAProxy will communicate with the services behind it on port 80.
 
 #### Example
+*See [a full example](./examples/haproxyExampleMultipleApps.js) in the
+`examples` directory*.
 
 ```javascript
 const webAContainers = [];

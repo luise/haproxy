@@ -13,7 +13,10 @@ before_script:
 
 script:
     - gulp lint test
+    - mkdir -p ~/.kelda/infra/ && mv ./testInfra.js ~/.kelda/infra/default.js
     - ./kelda inspect ./haproxy.js graphviz
+    - ./kelda inspect ./examples/haproxyExampleSingleApp.js graphviz
+    - ./kelda inspect ./examples/haproxyExampleMultipleApps.js graphviz
 
 notifications:
     slack:
