@@ -21,7 +21,7 @@ HAProxy will communicate with the containers behind it on port 80.
 directory*.
 
 ```javascript
-const {Container} = require('kelda');
+const { Container, allowTraffic } = require('kelda');
 const haproxy = require('@kelda/haproxy');
 
 // Create 3 nginx containers
@@ -117,7 +117,7 @@ To make the proxy accessible from the public internet, simply add the following
 line to your blueprint:
 
 ```javascript
-proxy.allowFrom(publicInternet, haproxy.exposedPort);
+allowTraffic(publicInternet, proxy, haproxy.exposedPort);
 ```
 
 This will open port 80 on the proxy instance.

@@ -29,7 +29,7 @@ const loadBalancer = haproxy.withURLrouting({
 });
 
 // Allow requests from the public internet to the load balancer on port 80.
-loadBalancer.allowFrom(kelda.publicInternet, haproxy.exposedPort);
+kelda.allowTraffic(kelda.publicInternet, loadBalancer, haproxy.exposedPort);
 
 // Deploy the application containers and load balancer.
 const inf = kelda.baseInfrastructure();

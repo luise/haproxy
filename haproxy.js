@@ -1,4 +1,4 @@
-const { Container } = require('kelda');
+const { Container, allowTraffic } = require('kelda');
 const fs = require('fs');
 const path = require('path');
 const Mustache = require('mustache');
@@ -49,9 +49,7 @@ function createHapContainer(containers, files) {
     filepathToContent: files,
   });
 
-  containers.forEach((c) => {
-    c.allowFrom(haproxy, internalPort);
-  });
+  allowTraffic(haproxy, containers, internalPort);
 
   return haproxy;
 }
