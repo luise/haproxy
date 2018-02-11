@@ -37,7 +37,7 @@ backend default
 
       const containers = [];
       for (let i = 0; i < 2; i += 1) {
-        containers.push(new kelda.Container('foo', 'image'));
+        containers.push(new kelda.Container({ name: 'foo', image: 'image' }));
       }
       const hap = haproxy.simpleLoadBalancer(containers);
       assert.equal(hap.filepathToContent['/usr/local/etc/haproxy/haproxy.cfg'],
@@ -79,8 +79,8 @@ backend domainB
     server bar.q bar.q:80 check resolvers dns cookie bar.q
 `;
 
-      const domainA = [new kelda.Container('foo', 'image')];
-      const domainB = [new kelda.Container('bar', 'image')];
+      const domainA = [new kelda.Container({ name: 'foo', image: 'image' })];
+      const domainB = [new kelda.Container({ name: 'bar', image: 'image' })];
       const hap = haproxy.withURLrouting({ domainA, domainB });
       assert.equal(hap.filepathToContent['/usr/local/etc/haproxy/haproxy.cfg'],
         expConfig);

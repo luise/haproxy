@@ -12,7 +12,9 @@ const indexPath = '/usr/share/nginx/html/index.html';
 function appWithContent(numServers, text) {
   const appContainers = [];
   for (let i = 0; i < numServers; i += 1) {
-    appContainers.push(new kelda.Container('web', 'nginx', {
+    appContainers.push(new kelda.Container({
+      name: 'web',
+      image: 'nginx',
       filepathToContent: { [indexPath]: text },
     }));
   }

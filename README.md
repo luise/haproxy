@@ -27,7 +27,7 @@ const haproxy = require('@kelda/haproxy');
 // Create 3 nginx containers
 const nginxContainers = [];
 for (let i = 0; i < 3; i += 1) {
-  nginxContainers.push(new Container('web', 'nginx'));
+  nginxContainers.push(new Container({ name: 'web', image: 'nginx' }));
 }
 
 const proxy = haproxy.simpleLoadBalancer(nginxContainers);
@@ -57,12 +57,12 @@ HAProxy will communicate with the services behind it on port 80.
 ```javascript
 const webAContainers = [];
 for (let i = 0; i < 3; i += 1) {
-  webAContainers.push(new Container('webA', 'nginx'));
+  webAContainers.push(new Container({ name: 'webA', image: 'nginx' }));
 }
 
 const webBContainers = [];
 for (let i = 0; i < 2; i += 1) {
-  webBContainers.push(new Container('webB', 'nginx'));
+  webBContainers.push(new Container({ name: 'webB', image: 'nginx' }));
 }
 
 const proxy = haproxy.withURLrouting({
